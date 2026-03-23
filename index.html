@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Módulos">
+<meta name="theme-color" content="#1a3a6b">
+<title>Comparador de Módulos</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ── PANTALLA DE LOGIN ── -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-icon">📱</div>
+    <h2 class="login-title">Comparador de Módulos</h2>
+    <p class="login-sub">Ingresá tu PIN de acceso</p>
+    <div class="pin-dots" id="pin-dots">
+      <span></span><span></span><span></span><span></span>
+    </div>
+    <div class="pin-grid">
+      <button class="pin-btn" data-n="1">1</button>
+      <button class="pin-btn" data-n="2">2</button>
+      <button class="pin-btn" data-n="3">3</button>
+      <button class="pin-btn" data-n="4">4</button>
+      <button class="pin-btn" data-n="5">5</button>
+      <button class="pin-btn" data-n="6">6</button>
+      <button class="pin-btn" data-n="7">7</button>
+      <button class="pin-btn" data-n="8">8</button>
+      <button class="pin-btn" data-n="9">9</button>
+      <button class="pin-btn pin-clear" id="pin-clear">✕</button>
+      <button class="pin-btn" data-n="0">0</button>
+      <button class="pin-btn pin-back" id="pin-back">⌫</button>
+    </div>
+    <p class="pin-error" id="pin-error"></p>
+  </div>
+</div>
+
+<!-- ── APP PRINCIPAL ── -->
+<div id="app" class="app-hidden">
+
+  <div id="install-banner">
+    <span>📲 Instalá esta app en tu pantalla de inicio</span>
+    <button id="install-btn">Instalar</button>
+  </div>
+  <div id="ios-tip">
+    <span>📲 Para instalar: tocá <strong>Compartir</strong> ↑ luego <strong>"Agregar a inicio"</strong></span>
+    <span class="close" onclick="this.parentElement.classList.remove('show')">✕</span>
+  </div>
+
+  <header>
+    <div class="hdr-top">
+      <h1>📱 Comparador de Módulos</h1>
+      <button class="admin-btn" id="admin-btn" title="Actualizar precios">⚙️</button>
+    </div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input id="search" type="search" placeholder="Buscar marca, modelo, calidad..."
+        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    </div>
+    <div class="filters">
+      <select class="pill" id="f-marca"><option value="">Todas las marcas</option></select>
+      <select class="pill" id="f-fuente">
+        <option value="">Todas las fuentes</option>
+        <option value="0">Fabritech</option>
+        <option value="1">Mayorista</option>
+        <option value="2">Boston</option>
+        <option value="3">Distribuidor</option>
+        <option value="4">Saracell</option>
+      </select>
+      <select class="pill" id="f-best">
+        <option value="">Cualquier precio</option>
+        <option value="0">Más barato: Fabritech</option>
+        <option value="1">Más barato: Mayorista</option>
+        <option value="2">Más barato: Boston</option>
+        <option value="3">Más barato: Distribuidor</option>
+        <option value="4">Más barato: Saracell</option>
+      </select>
+    </div>
+  </header>
+
+  <div class="count-bar">
+    <span id="count">Cargando…</span>
+    <div class="legend">
+      <span class="dot d-fab">Fabritech</span>
+      <span class="dot d-may">Mayorista</span>
+      <span class="dot d-bos">Boston</span>
+      <span class="dot d-dis">Distribuidor</span>
+      <span class="dot d-sar">Saracell</span>
+      <span class="dot d-grn">= más barato</span>
+    </div>
+  </div>
+
+  <div class="tbl-wrap">
+    <table id="tbl">
+      <thead><tr>
+        <th class="th0" style="min-width:75px">MARCA</th>
+        <th class="th0" style="min-width:110px">MODELO</th>
+        <th class="th0" style="min-width:160px">VARIANTE / CALIDAD</th>
+        <th class="th1">$ Fabritech</th>
+        <th class="th2">$ Mayorista</th>
+        <th class="th3">$ Boston</th>
+        <th class="th4">$ Distribuidor</th>
+        <th class="th5">$ Saracell</th>
+        <th class="th6">Mejor precio</th>
+      </tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="empty" id="empty" style="display:none">
+      <span class="ico">🔎</span>
+      <p>Sin resultados para esta búsqueda</p>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<!-- ── MODAL ADMIN ── -->
+<div id="admin-modal" class="modal-overlay hidden">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>⚙️ Actualizar Precios</h3>
+      <button class="modal-close" id="modal-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-desc">Subí un Excel o CSV con los nuevos precios y se actualizan automáticamente.</p>
+
+      <div class="upload-zone" id="upload-zone">
+        <input type="file" id="file-input" accept=".xlsx,.xls,.csv" hidden>
+        <div class="upload-icon">📂</div>
+        <p class="upload-text">Arrastrá tu archivo acá<br><small>o tocá para seleccionar</small></p>
+        <p class="upload-formats">Excel (.xlsx · .xls) &nbsp;·&nbsp; CSV</p>
+      </div>
+
+      <div class="upload-preview hidden" id="upload-preview">
+        <div id="preview-info"></div>
+        <div class="preview-actions">
+          <button class="btn-secondary" id="preview-cancel">Cancelar</button>
+          <button class="btn-primary" id="preview-apply">✅ Aplicar cambios</button>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-outline" id="btn-export">💾 Exportar data.json</button>
+        <button class="btn-outline" id="btn-template">📋 Descargar plantilla</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOAST ── -->
+<div id="toast" class="toast"></div>
+
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
