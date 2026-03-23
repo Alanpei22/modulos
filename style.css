@@ -471,6 +471,68 @@ td.win { text-align: center; color: var(--grn2); font-weight: 700; font-size: .7
 .toast.success { background: linear-gradient(135deg, #0f7a45, #1a9e5c); }
 .toast.error   { background: linear-gradient(135deg, #b91c1c, #dc2626); }
 
+/* ── MODAL DETALLE ── */
+.detail-card { max-height: 92vh; }
+
+.detail-title-wrap {
+  display: flex; flex-direction: column; gap: 2px; flex: 1;
+}
+.detail-marca   { font-size: .75rem; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: .06em; }
+.detail-modelo  { font-size: 1.1rem; font-weight: 800; color: var(--hdr); line-height: 1.2; }
+.detail-variante { font-size: .82rem; color: #555; }
+
+.detail-body {
+  padding: 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.dc-card {
+  border-radius: 14px;
+  padding: 16px 14px 14px;
+  display: flex; flex-direction: column; gap: 6px;
+  background: color-mix(in srgb, var(--dc-color, #2E75B6) 10%, #fff);
+  border: 1.5px solid color-mix(in srgb, var(--dc-color, #2E75B6) 25%, #fff);
+  transition: transform .1s;
+  cursor: default;
+}
+.dc-card:active { transform: scale(.97); }
+
+.dc-best {
+  background: linear-gradient(135deg, #00c45a, #00913f);
+  border-color: transparent;
+  grid-column: 1 / -1;
+  flex-direction: row;
+  align-items: center;
+  padding: 18px 20px;
+}
+.dc-best .dc-label { color: rgba(255,255,255,.8); font-size: .8rem; flex: 1; }
+.dc-best .dc-price { color: #fff; font-size: 1.9rem; }
+.dc-best .dc-badge { background: rgba(255,255,255,.25); color: #fff; font-size: .72rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+
+.dc-label {
+  font-size: .72rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .04em;
+  color: color-mix(in srgb, var(--dc-color, #2E75B6) 80%, #000);
+}
+.dc-price {
+  font-size: 1.25rem; font-weight: 800;
+  color: color-mix(in srgb, var(--dc-color, #2E75B6) 90%, #000);
+  font-variant-numeric: tabular-nums;
+}
+
+.dc-empty {
+  opacity: .45;
+  background: #f5f5f5;
+  border-color: #e0e0e0;
+}
+.dc-empty .dc-label { color: #aaa; }
+.dc-nd { font-size: .85rem !important; font-weight: 500 !important; color: #bbb !important; }
+
+/* click en filas muestra cursor pointer */
+tr.row { cursor: pointer; }
+
 /* ── RESPONSIVE ── */
 @media (max-width: 500px) {
   header h1    { font-size: .88rem; }

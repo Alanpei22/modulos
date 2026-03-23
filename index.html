@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -150,6 +150,21 @@
         <button class="btn-outline" id="btn-template">📋 Descargar plantilla</button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ── MODAL DETALLE DE PRECIOS ── -->
+<div id="detail-modal" class="modal-overlay hidden">
+  <div class="modal-card detail-card">
+    <div class="modal-header">
+      <div class="detail-title-wrap">
+        <span class="detail-marca" id="d-marca"></span>
+        <span class="detail-modelo" id="d-modelo"></span>
+        <span class="detail-variante" id="d-variante"></span>
+      </div>
+      <button class="modal-close" id="detail-close">✕</button>
+    </div>
+    <div class="detail-body" id="detail-body"></div>
   </div>
 </div>
 

@@ -124,6 +124,7 @@ function initApp() {
 
   initPWA();
   initAdmin();
+  initDetail();
   render();
 }
 
@@ -216,6 +217,11 @@ function render() {
   });
 
   tbody.innerHTML = rows.join('');
+
+  // Click en fila → detalle
+  tbody.querySelectorAll('tr.row').forEach((tr, idx) => {
+    tr.addEventListener('click', () => openDetail(filtered[idx]));
+  });
 }
 
 // ── Admin Panel ────────────────────────────────────────────
@@ -407,6 +413,55 @@ function downloadTemplate() {
   XLSX.utils.book_append_sheet(wb, ws, 'Precios');
   XLSX.writeFile(wb, 'plantilla_precios.xlsx');
   showToast('📋 Plantilla descargada', 'success');
+}
+
+// ── Modal Detalle ──────────────────────────────────────────
+let detailInited = false;
+function initDetail() {
+  if (detailInited) return;
+  detailInited = true;
+  document.getElementById('detail-close').addEventListener('click', closeDetail);
+  document.getElementById('detail-modal').addEventListener('click', e => {
+    if (e.target.id === 'detail-modal') closeDetail();
+  });
+}
+
+function openDetail(row) {
+  const b = bestIdx(row);
+  const v = (row.VARIANTE && row.VARIANTE !== 'nan') ? row.VARIANTE : '';
+
+  document.getElementById('d-marca').textContent    = row.MARCA;
+  document.getElementById('d-modelo').textContent   = row.MODELO;
+  document.getElementById('d-variante').textContent = v;
+
+  // Colores por proveedor
+  const colors = ['#2E75B6','#375623','#7F6000','#843C0C','#6B2D8B'];
+
+  const cards = LABELS.map((label, i) => {
+    const val  = row[FIELDS[i]];
+    const isBest = i === b;
+    const color  = colors[i];
+    if (!val) return `
+      <div class="dc-card dc-empty">
+        <div class="dc-label">${label}</div>
+        <div class="dc-price dc-nd">Sin precio</div>
+      </div>`;
+    return `
+      <div class="dc-card ${isBest ? 'dc-best' : ''}" style="${isBest ? '' : `--dc-color:${color}`}">
+        <div class="dc-label">${label}</div>
+        <div class="dc-price">$&nbsp;${val.toLocaleString('es-AR')}</div>
+        ${isBest ? '<div class="dc-badge">✅ Más barato</div>' : ''}
+      </div>`;
+  }).join('');
+
+  document.getElementById('detail-body').innerHTML = cards;
+  document.getElementById('detail-modal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDetail() {
+  document.getElementById('detail-modal').classList.add('hidden');
+  document.body.style.overflow = '';
 }
 
 // ── Toast ──────────────────────────────────────────────────
