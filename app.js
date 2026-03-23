@@ -27,6 +27,8 @@ function showApp() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').classList.remove('app-hidden');
   loadData();
+  initNav();
+  initStock();
 }
 
 function initPinPad() {
@@ -501,6 +503,262 @@ function initPWA() {
   if (isIOS && !isStandalone) {
     document.getElementById('ios-tip').classList.add('show');
   }
+}
+
+// ══════════════════════════════════════════════════════════
+// ── Stock de Celulares ────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+
+const STOCK_KEY = 'celulares_stock';
+let STOCK       = [];
+let editingPhoneId = null;
+let navInited      = false;
+let stockInited    = false;
+
+// ── Navegación de vistas ──────────────────────────────────
+function initNav() {
+  if (navInited) return;
+  navInited = true;
+  document.querySelectorAll('.nav-tab').forEach(btn => {
+    btn.addEventListener('click', () => switchView(btn.dataset.view));
+  });
+}
+
+function switchView(view) {
+  document.getElementById('view-modulos').style.display = view === 'modulos' ? 'flex' : 'none';
+  document.getElementById('view-stock').style.display   = view === 'stock'   ? 'flex' : 'none';
+  document.querySelectorAll('.nav-tab').forEach(b => {
+    b.classList.toggle('active', b.dataset.view === view);
+  });
+  if (view === 'stock') renderStock();
+}
+
+// ── Carga y guardado ──────────────────────────────────────
+function loadStock() {
+  try {
+    const raw = localStorage.getItem(STOCK_KEY);
+    STOCK = raw ? JSON.parse(raw) : [];
+  } catch (e) { STOCK = []; }
+}
+
+function saveStockData() {
+  localStorage.setItem(STOCK_KEY, JSON.stringify(STOCK));
+}
+
+// ── Inicialización ────────────────────────────────────────
+function initStock() {
+  if (stockInited) return;
+  stockInited = true;
+  loadStock();
+
+  document.getElementById('add-phone-btn').addEventListener('click', () => openPhoneModal());
+  document.getElementById('phone-modal-close').addEventListener('click', closePhoneModal);
+  document.getElementById('phone-cancel-btn').addEventListener('click', closePhoneModal);
+  document.getElementById('phone-save-btn').addEventListener('click', savePhone);
+  document.getElementById('phone-modal').addEventListener('click', e => {
+    if (e.target.id === 'phone-modal') closePhoneModal();
+  });
+
+  document.getElementById('stock-search').addEventListener('input', scheduleStockRender);
+  document.getElementById('sf-marca').addEventListener('change', scheduleStockRender);
+  document.getElementById('sf-estado').addEventListener('change', scheduleStockRender);
+  document.getElementById('sf-vendido').addEventListener('change', scheduleStockRender);
+}
+
+// ── Render del listado ────────────────────────────────────
+let stockTimer;
+function scheduleStockRender() {
+  clearTimeout(stockTimer);
+  stockTimer = setTimeout(renderStock, 60);
+}
+
+function renderStock() {
+  const q       = (document.getElementById('stock-search').value || '').trim().toLowerCase();
+  const fMarca  = document.getElementById('sf-marca').value;
+  const fEstado = document.getElementById('sf-estado').value;
+  const fVend   = document.getElementById('sf-vendido').value;
+  const words   = q ? q.split(/\s+/).filter(Boolean) : [];
+
+  // Actualizar opciones de marca con el stock completo
+  const marcas     = [...new Set(STOCK.map(p => p.marca))].sort();
+  const sfMarcaEl  = document.getElementById('sf-marca');
+  const prevMarca  = sfMarcaEl.value;
+  while (sfMarcaEl.options.length > 1) sfMarcaEl.remove(1);
+  marcas.forEach(m => {
+    const o = document.createElement('option');
+    o.value = m; o.textContent = m;
+    sfMarcaEl.appendChild(o);
+  });
+  sfMarcaEl.value = prevMarca;
+
+  const filtered = STOCK.filter(p => {
+    if (fMarca  && p.marca  !== fMarca)  return false;
+    if (fEstado && p.estado !== fEstado) return false;
+    if (fVend === '0' && p.vendido)      return false;
+    if (fVend === '1' && !p.vendido)     return false;
+    if (words.length) {
+      const hay = (p.marca + ' ' + p.modelo + ' ' + (p.imei || '')).toLowerCase();
+      return words.every(w => hay.includes(w));
+    }
+    return true;
+  });
+
+  const enStock  = filtered.filter(p => !p.vendido);
+  const totalVal = enStock.reduce((s, p) => s + (p.precio || 0), 0);
+  document.getElementById('stock-count').textContent =
+    filtered.length + ' equipo' + (filtered.length !== 1 ? 's' : '');
+  document.getElementById('stock-value').textContent =
+    enStock.length > 0 ? '$ ' + totalVal.toLocaleString('es-AR') : '';
+
+  const listEl  = document.getElementById('stock-list');
+  const emptyEl = document.getElementById('stock-empty');
+
+  if (filtered.length === 0) {
+    listEl.innerHTML = '';
+    emptyEl.style.display = '';
+    return;
+  }
+  emptyEl.style.display = 'none';
+
+  const badgeClass = { Nuevo: 'badge-new', Usado: 'badge-used', Reacondicionado: 'badge-refurb' };
+
+  listEl.innerHTML = filtered.map(p => {
+    const specs = [p.almacenamiento, p.ram ? p.ram + ' RAM' : ''].filter(Boolean).join(' · ');
+    const fecha = p.fecha
+      ? new Date(p.fecha).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: '2-digit' })
+      : '';
+    const fVenta = p.fecha_venta
+      ? new Date(p.fecha_venta).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: '2-digit' })
+      : '';
+    return `
+<div class="phone-card-item${p.vendido ? ' phone-sold' : ''}">
+  <div class="pc-top">
+    <div class="pc-title">
+      <span class="pc-marca">${esc(p.marca)}</span>
+      <span class="pc-modelo">${esc(p.modelo)}</span>
+    </div>
+    <span class="pc-badge ${badgeClass[p.estado] || ''}">${esc(p.estado) || '—'}</span>
+  </div>
+  ${specs  ? `<div class="pc-specs">${esc(specs)}</div>` : ''}
+  ${p.imei ? `<div class="pc-imei">IMEI: ${esc(p.imei)}</div>` : ''}
+  ${p.notas ? `<div class="pc-notas">${esc(p.notas)}</div>` : ''}
+  <div class="pc-bottom">
+    <div class="pc-price">${p.precio ? '$ ' + p.precio.toLocaleString('es-AR') : '—'}</div>
+    <div class="pc-actions">
+      ${p.vendido && fVenta ? `<span class="pc-date">Vta: ${fVenta}</span>` : ''}
+      ${!p.vendido && fecha  ? `<span class="pc-date">Ing: ${fecha}</span>` : ''}
+      ${!p.vendido ? `<button class="pc-btn pc-btn-edit" onclick="openPhoneModal('${p.id}')">✏️</button>` : ''}
+      ${!p.vendido
+        ? `<button class="pc-btn pc-btn-sell" onclick="markSold('${p.id}')">Vender</button>`
+        : `<button class="pc-btn pc-btn-unsell" onclick="markSold('${p.id}')">Reactivar</button>`}
+      <button class="pc-btn pc-btn-del" onclick="deletePhone('${p.id}')">🗑️</button>
+    </div>
+  </div>
+</div>`;
+  }).join('');
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Modal agregar / editar ────────────────────────────────
+function openPhoneModal(id) {
+  editingPhoneId = id || null;
+  const titleEl = document.getElementById('phone-modal-title');
+
+  if (id) {
+    const p = STOCK.find(x => x.id === id);
+    if (!p) return;
+    titleEl.textContent = '✏️ Editar Equipo';
+    document.getElementById('f-phone-marca').value   = p.marca || '';
+    document.getElementById('f-phone-modelo').value  = p.modelo || '';
+    document.getElementById('f-phone-estado').value  = p.estado || '';
+    document.getElementById('f-phone-precio').value  = p.precio || '';
+    document.getElementById('f-phone-storage').value = p.almacenamiento || '';
+    document.getElementById('f-phone-ram').value     = p.ram || '';
+    document.getElementById('f-phone-imei').value    = p.imei || '';
+    document.getElementById('f-phone-notas').value   = p.notas || '';
+  } else {
+    titleEl.textContent = '📱 Agregar Equipo';
+    ['f-phone-marca','f-phone-modelo','f-phone-precio','f-phone-imei','f-phone-notas'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('f-phone-estado').value  = '';
+    document.getElementById('f-phone-storage').value = '';
+    document.getElementById('f-phone-ram').value     = '';
+  }
+
+  document.getElementById('phone-modal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => document.getElementById('f-phone-marca').focus(), 350);
+}
+
+function closePhoneModal() {
+  document.getElementById('phone-modal').classList.add('hidden');
+  document.body.style.overflow = '';
+  editingPhoneId = null;
+}
+
+function savePhone() {
+  const marca   = document.getElementById('f-phone-marca').value.trim();
+  const modelo  = document.getElementById('f-phone-modelo').value.trim();
+  const estado  = document.getElementById('f-phone-estado').value;
+  const precio  = parseInt(document.getElementById('f-phone-precio').value) || 0;
+  const storage = document.getElementById('f-phone-storage').value;
+  const ram     = document.getElementById('f-phone-ram').value;
+  const imei    = document.getElementById('f-phone-imei').value.trim();
+  const notas   = document.getElementById('f-phone-notas').value.trim();
+
+  if (!marca)  { showToast('❌ Ingresá la marca', 'error');           return; }
+  if (!modelo) { showToast('❌ Ingresá el modelo', 'error');          return; }
+  if (!estado) { showToast('❌ Seleccioná el estado', 'error');       return; }
+  if (!precio) { showToast('❌ Ingresá el precio', 'error');          return; }
+  if (imei && !/^\d{15}$/.test(imei)) {
+    showToast('❌ El IMEI debe tener exactamente 15 dígitos', 'error'); return;
+  }
+
+  if (editingPhoneId) {
+    const idx = STOCK.findIndex(x => x.id === editingPhoneId);
+    if (idx >= 0) {
+      STOCK[idx] = { ...STOCK[idx], marca, modelo, estado, precio, almacenamiento: storage, ram, imei, notas };
+    }
+    showToast('✅ Equipo actualizado', 'success');
+  } else {
+    STOCK.unshift({
+      id: Date.now().toString(),
+      marca, modelo, estado, precio,
+      almacenamiento: storage, ram, imei, notas,
+      fecha: new Date().toISOString(),
+      vendido: false,
+    });
+    showToast('✅ Equipo agregado al stock', 'success');
+  }
+
+  saveStockData();
+  closePhoneModal();
+  renderStock();
+}
+
+function markSold(id) {
+  const p = STOCK.find(x => x.id === id);
+  if (!p) return;
+  p.vendido = !p.vendido;
+  if (p.vendido) p.fecha_venta = new Date().toISOString();
+  else           delete p.fecha_venta;
+  saveStockData();
+  renderStock();
+  showToast(p.vendido ? '✅ Marcado como vendido' : '↩️ Reactivado al stock', p.vendido ? 'success' : 'info');
+}
+
+function deletePhone(id) {
+  const p = STOCK.find(x => x.id === id);
+  if (!p) return;
+  if (!confirm(`¿Eliminar ${p.marca} ${p.modelo}?`)) return;
+  STOCK = STOCK.filter(x => x.id !== id);
+  saveStockData();
+  renderStock();
+  showToast('🗑️ Equipo eliminado', 'info');
 }
 
 // ── Arranque ───────────────────────────────────────────────
