@@ -533,6 +533,56 @@ td.win { text-align: center; color: var(--grn2); font-weight: 700; font-size: .7
 /* click en filas muestra cursor pointer */
 tr.row { cursor: pointer; }
 
+/* ── DETAIL SHARE ROW ── */
+.detail-share-row {
+  grid-column: 1 / -1;
+  display: flex; gap: 10px;
+  padding-top: 4px;
+}
+.btn-wa-mod {
+  flex: 1;
+  background: linear-gradient(135deg, #25d366, #128c4e);
+  color: #fff; border: none;
+  border-radius: 12px; padding: 12px 16px;
+  font-size: .88rem; font-weight: 700; cursor: pointer;
+  transition: opacity .15s, transform .1s;
+  text-align: center;
+}
+.btn-wa-mod:active { opacity: .85; transform: scale(.97); }
+
+.btn-copy-mod {
+  background: #f0fdf4; color: #059669;
+  border: 1.5px solid #bbf7d0;
+  border-radius: 12px; padding: 12px 16px;
+  font-size: .88rem; font-weight: 700; cursor: pointer;
+  transition: opacity .15s, transform .1s;
+  white-space: nowrap;
+}
+.btn-copy-mod:active { opacity: .85; transform: scale(.97); }
+
+/* ── PAGINACIÓN ── */
+.pager {
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  padding: 14px 16px;
+  background: #fff;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.pg-btn {
+  background: var(--hdr);
+  color: #fff; border: none;
+  border-radius: 10px; padding: 8px 18px;
+  font-size: .82rem; font-weight: 700;
+  cursor: pointer;
+  transition: opacity .15s;
+}
+.pg-btn:disabled { opacity: .35; cursor: default; }
+.pg-btn:not(:disabled):active { opacity: .8; }
+.pg-info {
+  font-size: .82rem; font-weight: 600; color: #64748b;
+  min-width: 90px; text-align: center;
+}
+
 /* ── RESPONSIVE ── */
 @media (max-width: 500px) {
   header h1    { font-size: .88rem; }

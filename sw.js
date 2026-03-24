@@ -1,4 +1,4 @@
-const CACHE = 'modulos-v2';
+const CACHE = 'modulos-v3';
 const ASSETS = [
   '/',
   '/index.html',

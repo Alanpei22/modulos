@@ -143,6 +143,10 @@ function bestIdx(row) {
 }
 
 // ── Render ─────────────────────────────────────────────────
+const PAGE_SIZE = 60;
+let currentPage = 0;
+let currentFiltered = [];
+
 let renderTimer;
 function scheduleRender() {
   clearTimeout(renderTimer);
@@ -158,7 +162,7 @@ function render() {
   const bi      = fBest   !== '' ? parseInt(fBest)   : -1;
   const words   = q ? q.split(/\s+/).filter(Boolean) : [];
 
-  const filtered = DATA.filter(r => {
+  currentFiltered = DATA.filter(r => {
     if (fMarca && r.MARCA !== fMarca) return false;
     if (fi >= 0 && !r[FIELDS[fi]]) return false;
     if (bi >= 0 && bestIdx(r) !== bi) return false;
@@ -169,14 +173,42 @@ function render() {
     return true;
   });
 
+  // Reset página al cambiar filtros
+  currentPage = 0;
+  renderPage();
+}
+
+function renderPage() {
+  const filtered = currentFiltered;
+  const total    = filtered.length;
+  const pages    = Math.ceil(total / PAGE_SIZE);
+  if (currentPage >= pages && pages > 0) currentPage = pages - 1;
+
+  const start = currentPage * PAGE_SIZE;
+  const slice = filtered.slice(start, start + PAGE_SIZE);
+
   document.getElementById('count').textContent =
-    filtered.length.toLocaleString('es-AR') + ' variante' + (filtered.length !== 1 ? 's' : '');
+    total.toLocaleString('es-AR') + ' variante' + (total !== 1 ? 's' : '');
 
   const tbody = document.getElementById('tbody');
   const empty = document.getElementById('empty');
   const thead = document.querySelector('#tbl thead');
 
-  if (filtered.length === 0) {
+  // Controles de paginación
+  const pagerEl = document.getElementById('pager');
+  if (pagerEl) {
+    if (pages > 1) {
+      pagerEl.style.display = '';
+      document.getElementById('pg-info').textContent =
+        `Pág ${currentPage + 1} / ${pages}`;
+      document.getElementById('pg-prev').disabled = currentPage === 0;
+      document.getElementById('pg-next').disabled = currentPage >= pages - 1;
+    } else {
+      pagerEl.style.display = 'none';
+    }
+  }
+
+  if (total === 0) {
     tbody.innerHTML = '';
     empty.style.display = '';
     thead.style.display = 'none';
@@ -188,7 +220,7 @@ function render() {
   let prevMarca = '', prevModelo = '', zebra = 0;
   const rows = [];
 
-  filtered.forEach(r => {
+  slice.forEach(r => {
     if (r.MARCA !== prevMarca) {
       rows.push(`<tr class="sep"><td colspan="9">▌ ${r.MARCA}</td></tr>`);
       prevMarca = r.MARCA; prevModelo = ''; zebra = 0;
@@ -220,8 +252,16 @@ function render() {
 
   // Click en fila → detalle
   tbody.querySelectorAll('tr.row').forEach((tr, idx) => {
-    tr.addEventListener('click', () => openDetail(filtered[idx]));
+    tr.addEventListener('click', () => openDetail(slice[idx]));
   });
+}
+
+function changePage(dir) {
+  const pages = Math.ceil(currentFiltered.length / PAGE_SIZE);
+  currentPage = Math.max(0, Math.min(pages - 1, currentPage + dir));
+  renderPage();
+  // Scroll al tope de la tabla
+  document.querySelector('.tbl-wrap').scrollTop = 0;
 }
 
 // ── Admin Panel ────────────────────────────────────────────
@@ -417,6 +457,8 @@ function downloadTemplate() {
 
 // ── Modal Detalle ──────────────────────────────────────────
 let detailInited = false;
+let currentDetailRow = null;
+
 function initDetail() {
   if (detailInited) return;
   detailInited = true;
@@ -427,6 +469,7 @@ function initDetail() {
 }
 
 function openDetail(row) {
+  currentDetailRow = row;
   const b = bestIdx(row);
   const v = (row.VARIANTE && row.VARIANTE !== 'nan') ? row.VARIANTE : '';
 
@@ -438,7 +481,7 @@ function openDetail(row) {
   const colors = ['#2E75B6','#375623','#7F6000','#843C0C','#6B2D8B'];
 
   const cards = LABELS.map((label, i) => {
-    const val  = row[FIELDS[i]];
+    const val    = row[FIELDS[i]];
     const isBest = i === b;
     const color  = colors[i];
     if (!val) return `
@@ -454,7 +497,17 @@ function openDetail(row) {
       </div>`;
   }).join('');
 
-  document.getElementById('detail-body').innerHTML = cards;
+  // Botones de acción
+  const bestVal   = b >= 0 ? row[FIELDS[b]] : null;
+  const bestLabel = b >= 0 ? LABELS[b] : '';
+  const actions   = `
+    <div class="detail-share-row">
+      <button class="btn-wa-mod" onclick="shareModuloWA()">🟢 Compartir por WhatsApp</button>
+      <button class="btn-copy-mod" onclick="copyModuloInfo()">📋 Copiar precio</button>
+    </div>
+  `;
+
+  document.getElementById('detail-body').innerHTML = cards + actions;
   document.getElementById('detail-modal').classList.remove('hidden');
   document.body.style.overflow = 'hidden';
 }
@@ -462,6 +515,53 @@ function openDetail(row) {
 function closeDetail() {
   document.getElementById('detail-modal').classList.add('hidden');
   document.body.style.overflow = '';
+  currentDetailRow = null;
+}
+
+// ── WhatsApp para módulos ───────────────────────────────────
+function shareModuloWA() {
+  const row = currentDetailRow;
+  if (!row) return;
+
+  const b = bestIdx(row);
+  const v = (row.VARIANTE && row.VARIANTE !== 'nan') ? row.VARIANTE : null;
+
+  let msg = `🔧 *Módulo ${row.MARCA} ${row.MODELO}*\n`;
+  if (v) msg += `📋 ${v}\n`;
+  msg += `\n`;
+
+  LABELS.forEach((label, i) => {
+    const val = row[FIELDS[i]];
+    if (val) {
+      const isBest = i === b;
+      msg += `${isBest ? '✅' : '•'} ${label}: $${val.toLocaleString('es-AR')}${isBest ? ' _(más barato)_' : ''}\n`;
+    }
+  });
+
+  if (b >= 0) {
+    msg += `\n💰 Mejor precio: *${LABELS[b]}* — $${row[FIELDS[b]].toLocaleString('es-AR')}`;
+  }
+
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+}
+
+// ── Copiar info de módulo ───────────────────────────────────
+function copyModuloInfo() {
+  const row = currentDetailRow;
+  if (!row) return;
+
+  const b = bestIdx(row);
+  const v = (row.VARIANTE && row.VARIANTE !== 'nan') ? row.VARIANTE : null;
+
+  let text = `Módulo ${row.MARCA} ${row.MODELO}`;
+  if (v) text += ` - ${v}`;
+  if (b >= 0) text += ` - Mejor precio: ${LABELS[b]} $${row[FIELDS[b]].toLocaleString('es-AR')}`;
+
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('💾 Info copiada al portapapeles', 'success');
+    }).catch(() => showToast('No se pudo copiar', 'error'));
+  }
 }
 
 // ── Toast ──────────────────────────────────────────────────
