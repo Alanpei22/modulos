@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Módulos">
 <meta name="theme-color" content="#1a3a6b">
-<title>Gestión Móvil</title>
+<title>Comparador de Módulos</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon.svg">
 <link rel="stylesheet" href="style.css">
@@ -19,7 +19,7 @@
 <div id="login-screen">
   <div class="login-card">
     <div class="login-icon">📱</div>
-    <h2 class="login-title">Gestión Móvil</h2>
+    <h2 class="login-title">Comparador de Módulos</h2>
     <p class="login-sub">Ingresá tu PIN de acceso</p>
     <div class="pin-dots" id="pin-dots">
       <span></span><span></span><span></span><span></span>
@@ -54,131 +54,73 @@
     <span class="close" onclick="this.parentElement.classList.remove('show')">✕</span>
   </div>
 
-  <!-- ── VISTA: MÓDULOS ── -->
-  <div id="view-modulos" class="view">
-    <header>
-      <div class="hdr-top">
-        <h1>🔧 Comparador de Módulos</h1>
-        <button class="admin-btn" id="admin-btn" title="Actualizar precios">⚙️</button>
-      </div>
-      <div class="search-wrap">
-        <span class="search-icon">🔍</span>
-        <input id="search" type="search" placeholder="Buscar marca, modelo, calidad..."
-          autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-      </div>
-      <div class="filters">
-        <select class="pill" id="f-marca"><option value="">Todas las marcas</option></select>
-        <select class="pill" id="f-fuente">
-          <option value="">Todas las fuentes</option>
-          <option value="0">Fabritech</option>
-          <option value="1">Mayorista</option>
-          <option value="2">Boston</option>
-          <option value="3">Distribuidor</option>
-          <option value="4">Saracell</option>
-        </select>
-        <select class="pill" id="f-best">
-          <option value="">Cualquier precio</option>
-          <option value="0">Más barato: Fabritech</option>
-          <option value="1">Más barato: Mayorista</option>
-          <option value="2">Más barato: Boston</option>
-          <option value="3">Más barato: Distribuidor</option>
-          <option value="4">Más barato: Saracell</option>
-        </select>
-      </div>
-    </header>
-
-    <div class="count-bar">
-      <span id="count">Cargando…</span>
-      <div class="legend">
-        <span class="dot d-fab">Fabritech</span>
-        <span class="dot d-may">Mayorista</span>
-        <span class="dot d-bos">Boston</span>
-        <span class="dot d-dis">Distribuidor</span>
-        <span class="dot d-sar">Saracell</span>
-        <span class="dot d-grn">= más barato</span>
-      </div>
+  <header>
+    <div class="hdr-top">
+      <h1>📱 Comparador de Módulos</h1>
+      <button class="admin-btn" id="admin-btn" title="Actualizar precios">⚙️</button>
     </div>
-
-    <div class="tbl-wrap">
-      <table id="tbl">
-        <thead><tr>
-          <th class="th0" style="min-width:75px">MARCA</th>
-          <th class="th0" style="min-width:110px">MODELO</th>
-          <th class="th0" style="min-width:160px">VARIANTE / CALIDAD</th>
-          <th class="th1">$ Fabritech</th>
-          <th class="th2">$ Mayorista</th>
-          <th class="th3">$ Boston</th>
-          <th class="th4">$ Distribuidor</th>
-          <th class="th5">$ Saracell</th>
-          <th class="th6">Mejor precio</th>
-        </tr></thead>
-        <tbody id="tbody"></tbody>
-      </table>
-      <div class="empty" id="empty" style="display:none">
-        <span class="ico">🔎</span>
-        <p>Sin resultados para esta búsqueda</p>
-      </div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input id="search" type="search" placeholder="Buscar marca, modelo, calidad..."
+        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
     </div>
-  </div><!-- /view-modulos -->
-
-  <!-- ── VISTA: STOCK CELULARES ── -->
-  <div id="view-stock" class="view" style="display:none">
-    <header>
-      <div class="hdr-top">
-        <h1>📦 Stock de Celulares</h1>
-        <button class="admin-btn" id="add-phone-btn" title="Agregar equipo" style="font-size:1.5rem;font-weight:700">＋</button>
-      </div>
-      <div class="search-wrap">
-        <span class="search-icon">🔍</span>
-        <input id="stock-search" type="search" placeholder="Buscar marca, modelo, IMEI..."
-          autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-      </div>
-      <div class="filters">
-        <select class="pill" id="sf-marca"><option value="">Todas las marcas</option></select>
-        <select class="pill" id="sf-estado">
-          <option value="">Todos los estados</option>
-          <option value="Nuevo">Nuevo</option>
-          <option value="Usado">Usado</option>
-          <option value="Reacondicionado">Reacondicionado</option>
-        </select>
-        <select class="pill" id="sf-vendido">
-          <option value="0">En stock</option>
-          <option value="1">Vendidos</option>
-          <option value="">Todos</option>
-        </select>
-      </div>
-    </header>
-
-    <div class="count-bar stock-count-bar">
-      <span id="stock-count">0 equipos</span>
-      <span id="stock-value" class="stock-value-badge"></span>
+    <div class="filters">
+      <select class="pill" id="f-marca"><option value="">Todas las marcas</option></select>
+      <select class="pill" id="f-fuente">
+        <option value="">Todas las fuentes</option>
+        <option value="0">Fabritech</option>
+        <option value="1">Mayorista</option>
+        <option value="2">Boston</option>
+        <option value="3">Distribuidor</option>
+        <option value="4">Saracell</option>
+      </select>
+      <select class="pill" id="f-best">
+        <option value="">Cualquier precio</option>
+        <option value="0">Más barato: Fabritech</option>
+        <option value="1">Más barato: Mayorista</option>
+        <option value="2">Más barato: Boston</option>
+        <option value="3">Más barato: Distribuidor</option>
+        <option value="4">Más barato: Saracell</option>
+      </select>
     </div>
+  </header>
 
-    <div class="stock-list-wrap">
-      <div id="stock-list"></div>
-      <div class="empty" id="stock-empty" style="display:none">
-        <span class="ico">📦</span>
-        <p>No hay equipos registrados</p>
-        <button class="btn-primary" style="margin-top:8px" onclick="openPhoneModal()">Agregar equipo</button>
-      </div>
+  <div class="count-bar">
+    <span id="count">Cargando…</span>
+    <div class="legend">
+      <span class="dot d-fab">Fabritech</span>
+      <span class="dot d-may">Mayorista</span>
+      <span class="dot d-bos">Boston</span>
+      <span class="dot d-dis">Distribuidor</span>
+      <span class="dot d-sar">Saracell</span>
+      <span class="dot d-grn">= más barato</span>
     </div>
-  </div><!-- /view-stock -->
+  </div>
 
-  <!-- ── BOTTOM NAV ── -->
-  <nav id="bottom-nav">
-    <button class="nav-tab active" data-view="modulos">
-      <span class="nav-ico">🔧</span>
-      <span>Módulos</span>
-    </button>
-    <button class="nav-tab" data-view="stock">
-      <span class="nav-ico">📦</span>
-      <span>Celulares</span>
-    </button>
-  </nav>
+  <div class="tbl-wrap">
+    <table id="tbl">
+      <thead><tr>
+        <th class="th0" style="min-width:75px">MARCA</th>
+        <th class="th0" style="min-width:110px">MODELO</th>
+        <th class="th0" style="min-width:160px">VARIANTE / CALIDAD</th>
+        <th class="th1">$ Fabritech</th>
+        <th class="th2">$ Mayorista</th>
+        <th class="th3">$ Boston</th>
+        <th class="th4">$ Distribuidor</th>
+        <th class="th5">$ Saracell</th>
+        <th class="th6">Mejor precio</th>
+      </tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="empty" id="empty" style="display:none">
+      <span class="ico">🔎</span>
+      <p>Sin resultados para esta búsqueda</p>
+    </div>
+  </div>
 
 </div><!-- /app -->
 
-<!-- ── MODAL ADMIN (módulos) ── -->
+<!-- ── MODAL ADMIN ── -->
 <div id="admin-modal" class="modal-overlay hidden">
   <div class="modal-card">
     <div class="modal-header">
@@ -223,108 +165,6 @@
       <button class="modal-close" id="detail-close">✕</button>
     </div>
     <div class="detail-body" id="detail-body"></div>
-  </div>
-</div>
-
-<!-- ── MODAL AGREGAR / EDITAR CELULAR ── -->
-<div id="phone-modal" class="modal-overlay hidden">
-  <div class="modal-card phone-form-card">
-    <div class="modal-header">
-      <h3 id="phone-modal-title">📱 Agregar Equipo</h3>
-      <button class="modal-close" id="phone-modal-close">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-grid">
-
-        <div class="form-group">
-          <label class="form-label">Marca *</label>
-          <input id="f-phone-marca" class="form-input" type="text"
-            placeholder="Samsung, Apple…" list="marca-list" autocomplete="off">
-          <datalist id="marca-list">
-            <option value="Samsung">
-            <option value="Apple">
-            <option value="Motorola">
-            <option value="Xiaomi">
-            <option value="LG">
-            <option value="Huawei">
-            <option value="Nokia">
-            <option value="TCL">
-            <option value="OPPO">
-            <option value="Realme">
-            <option value="OnePlus">
-          </datalist>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Modelo *</label>
-          <input id="f-phone-modelo" class="form-input" type="text"
-            placeholder="Galaxy A54, iPhone 14…" autocomplete="off">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Estado *</label>
-          <select id="f-phone-estado" class="form-select">
-            <option value="">Seleccionar…</option>
-            <option value="Nuevo">Nuevo</option>
-            <option value="Usado">Usado</option>
-            <option value="Reacondicionado">Reacondicionado</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Precio ($) *</label>
-          <input id="f-phone-precio" class="form-input" type="number"
-            placeholder="85000" min="0" inputmode="numeric">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Almacenamiento</label>
-          <select id="f-phone-storage" class="form-select">
-            <option value="">—</option>
-            <option value="16GB">16 GB</option>
-            <option value="32GB">32 GB</option>
-            <option value="64GB">64 GB</option>
-            <option value="128GB">128 GB</option>
-            <option value="256GB">256 GB</option>
-            <option value="512GB">512 GB</option>
-            <option value="1TB">1 TB</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">RAM</label>
-          <select id="f-phone-ram" class="form-select">
-            <option value="">—</option>
-            <option value="1GB">1 GB</option>
-            <option value="2GB">2 GB</option>
-            <option value="3GB">3 GB</option>
-            <option value="4GB">4 GB</option>
-            <option value="6GB">6 GB</option>
-            <option value="8GB">8 GB</option>
-            <option value="12GB">12 GB</option>
-            <option value="16GB">16 GB</option>
-          </select>
-        </div>
-
-        <div class="form-group form-group--full">
-          <label class="form-label">IMEI</label>
-          <input id="f-phone-imei" class="form-input" type="text"
-            placeholder="123456789012345" maxlength="15" inputmode="numeric">
-        </div>
-
-        <div class="form-group form-group--full">
-          <label class="form-label">Notas</label>
-          <textarea id="f-phone-notas" class="form-input form-textarea"
-            placeholder="Accesorios incluidos, detalles…" rows="2"></textarea>
-        </div>
-
-      </div>
-
-      <div class="preview-actions" style="margin-top:4px">
-        <button class="btn-secondary" id="phone-cancel-btn">Cancelar</button>
-        <button class="btn-primary" id="phone-save-btn">💾 Guardar</button>
-      </div>
-    </div>
   </div>
 </div>
 
