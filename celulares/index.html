@@ -44,11 +44,26 @@
 <!-- ── APP ── -->
 <div id="app" class="app-hidden">
 
+  <!-- PWA Banner -->
+  <div id="install-banner" class="install-banner">
+    <span>📲 Instalá esta app en tu pantalla de inicio</span>
+    <button id="install-btn">Instalar</button>
+    <button class="banner-close" onclick="document.getElementById('install-banner').classList.remove('show')">✕</button>
+  </div>
+  <div id="ios-tip" class="install-banner">
+    <span>📲 Tocá <strong>Compartir</strong> ↑ luego <strong>"Agregar a inicio"</strong></span>
+    <button class="banner-close" onclick="document.getElementById('ios-tip').classList.remove('show')">✕</button>
+  </div>
+
   <!-- Header -->
   <header>
     <div class="hdr-top">
       <h1>📱 Stock de Celulares</h1>
-      <button class="hdr-btn" id="add-btn" title="Agregar equipo">＋</button>
+      <div class="hdr-actions">
+        <button class="hdr-btn" id="stats-btn" title="Estadísticas y historial">📊</button>
+        <button class="hdr-btn" id="export-btn" title="Exportar stock">💾</button>
+        <button class="hdr-btn" id="add-btn" title="Agregar equipo">＋</button>
+      </div>
     </div>
     <div class="search-wrap">
       <span class="search-icon">🔍</span>
@@ -68,6 +83,12 @@
         <option value="1">Vendidos</option>
         <option value="">Todos</option>
       </select>
+    </div>
+    <div class="price-filter">
+      <span class="price-filter-lbl">💰 Precio:</span>
+      <input id="f-min" class="price-input" type="number" placeholder="Mín" min="0" inputmode="numeric">
+      <span class="price-filter-sep">—</span>
+      <input id="f-max" class="price-input" type="number" placeholder="Máx" min="0" inputmode="numeric">
     </div>
   </header>
 
@@ -198,6 +219,54 @@
     </div>
     <div class="det-body" id="det-body"></div>
     <div class="det-actions" id="det-actions"></div>
+  </div>
+</div>
+
+<!-- ── MODAL ESTADÍSTICAS ── -->
+<div id="stats-modal" class="modal-overlay hidden">
+  <div class="modal-card stats-card">
+    <div class="modal-header">
+      <h3>📊 Estadísticas</h3>
+      <button class="modal-close" id="stats-close">✕</button>
+    </div>
+    <div class="modal-body" id="stats-body"></div>
+  </div>
+</div>
+
+<!-- ── MODAL EXPORT ── -->
+<div id="export-modal" class="modal-overlay hidden">
+  <div class="modal-card export-card">
+    <div class="modal-header">
+      <h3>💾 Exportar Stock</h3>
+      <button class="modal-close" id="export-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="export-desc">Descargá una copia de tu stock para respaldo o para abrir en Excel.</p>
+      <div class="export-options">
+        <button class="export-opt" id="export-csv">
+          <span class="export-opt-ico">📊</span>
+          <div>
+            <div class="export-opt-title">Exportar como CSV</div>
+            <div class="export-opt-sub">Compatible con Excel y Google Sheets</div>
+          </div>
+        </button>
+        <button class="export-opt" id="export-json">
+          <span class="export-opt-ico">🗃️</span>
+          <div>
+            <div class="export-opt-title">Exportar como JSON</div>
+            <div class="export-opt-sub">Backup completo para restaurar</div>
+          </div>
+        </button>
+        <button class="export-opt" id="import-json-btn">
+          <span class="export-opt-ico">📥</span>
+          <div>
+            <div class="export-opt-title">Restaurar desde backup</div>
+            <div class="export-opt-sub">Importar un JSON guardado anteriormente</div>
+          </div>
+        </button>
+        <input type="file" id="import-file" accept=".json" hidden>
+      </div>
+    </div>
   </div>
 </div>
 
