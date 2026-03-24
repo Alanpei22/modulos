@@ -1,4 +1,4 @@
-const CACHE = 'cel-v1';
+const CACHE = 'cel-v2';
 const FILES = ['./', 'index.html', 'style.css', 'app.js', 'manifest.json', 'icon.svg'];
 
 self.addEventListener('install', e => {
